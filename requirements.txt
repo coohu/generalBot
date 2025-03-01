@@ -1,0 +1,7 @@
+typing_extensions==4.12.2
+comtypes==1.4.10
+mariadb==1.1.12
+numpy==2.2.3
+pywin32==308
+SQLAlchemy==2.0.38
+uiautomation==2.0.20

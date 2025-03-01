@@ -1,0 +1,4 @@
+pcenv/
+**/__pycache__/
+*.jpg
+*.png
