@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 6. 填写数据库账户和名称
 
-./db/db.py
+./database/db.py
 ```
 c={
     "MARIADB_URL":"mariadb+mariadbconnector://<数据库用户>:<数据库密码>@127.0.0.1:3306/<数据库名>",
