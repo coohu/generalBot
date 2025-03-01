@@ -4,8 +4,8 @@ from sqlalchemy.types import UserDefinedType
 from typing import Optional, List, Dict, Any
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
+from database import env
 import json
-import db.env as env
 
 engine = create_engine(env.c['MARIADB_URL'])
 
@@ -237,10 +237,4 @@ class Image(CustomBase):
 # Base.registry.configure()
 Base.metadata.create_all(engine)
 
-
-print("Table 'user','customer', 'post', 'image' created successfully!")
-
-
-
-
-
+# print("Table 'user','customer', 'post', 'image' created successfully!")

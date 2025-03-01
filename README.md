@@ -1,5 +1,5 @@
 # generalBot
-### 宝特将军
+### 宝特将军，不是一般的Bot。
 
 
 ### 安装
@@ -31,5 +31,7 @@ mariadb.exe -u root -p -e "CREATE DATABASE rpa;"
 ```
 7. 登录微信，并让微信窗口在桌面，运行程序。
 ```
-python wxbot.py
+python main.py contact
 ```
+
+其中 contact 是要执行的命令， 有['contact', 'post', 'search', 'chat'] 四种可选。
