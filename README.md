@@ -24,7 +24,7 @@ c={
     "MARIADB_URL":"mariadb+mariadbconnector://<数据库用户>:<数据库密码>@127.0.0.1:3306/<数据库名>",
 }
 ```
-创建名为“rpa”的数据库，名称要与./db/db.py 文件中的<数据库名>一样。
+创建名为“rpa”的数据库，名称要与./database/db.py 文件中的<数据库名>一样。
 ```
 mariadb.exe -u root -p -e "CREATE DATABASE rpa;"
 
