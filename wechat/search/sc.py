@@ -10,7 +10,7 @@ def search():
         ws.ButtonControl(Name='文章').Click()
         time.sleep(random.uniform(0.5, 1.5))
         ws.SetFocus()
-        ws.SendKeys("上海躺平群")
+        ws.SendKeys("加群")
         time.sleep(random.uniform(0.5, 1.5))
         ws.ButtonControl(Name='搜索').Click()
         time.sleep(random.uniform(2.5, 3.5))

@@ -1,0 +1,1 @@
+2025-03-02 17:29:40.016 sc.py[17] search -> Find Control Timeout(10s): {Name: '最新', ControlType: ButtonControl}

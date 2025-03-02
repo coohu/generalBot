@@ -13,11 +13,13 @@ def invite(parent):
     if pfc.Exists(2):
         safeClick(parent, pfc, position='cc')
         cfn = parent.WindowControl(ClassName='WeUIDialog', Name='添加朋友请求')
-        if cfn.Exists(2):
-            cfnBtn = cfn.ButtonControl(searchDepth=3,  Name='确定')
-            if cfnBtn.Exists(1):
-                safeClick(cfn, cfnBtn, position='cc')
-                return True 
+        time.sleep(random.uniform(0.5, 1.5))
+        cfnBtn = parent.ButtonControl(searchDepth=4,  Name='确定')
+        if cfnBtn.Exists(1):
+            safeClick(cfn, cfnBtn, position='cc')
+            return True 
+
+
     return False
 
 def scroll(parent, list_ctl, func=None, method="key", amount=2):
@@ -118,8 +120,6 @@ def imageView():
     except Exception as e:
         print(e)
         return rts
-
-
 
 def profile(parent):
     permission = None
@@ -280,4 +280,4 @@ def scrollToIt(list_ctl, it_ctl):
             target_percent = min(100, vertical_scroll_percent + relative_pos)
 
         scroll_pattern.SetScrollPercent(-1, target_percent)
-        time.sleep(random.uniform(0.2, 1))
+        # time.sleep(random.uniform(0.2, 1))

@@ -1,12 +1,12 @@
-from sqlalchemy.orm import sessionmaker
-import uiautomation as auto
-from database import db
-import hashlib, re
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
+from sqlalchemy.orm import sessionmaker
 import subprocess, json, time, random
 import win32api, win32gui, win32con
 from typing import List, Dict, Set
 from datetime import datetime
+import uiautomation as auto
+from database import db
+import hashlib, re
 
 Session = sessionmaker(bind=db.engine)
 session = Session()

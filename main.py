@@ -39,11 +39,8 @@ def main(opt):
     elif opt == 'chat':
         nv.ButtonControl(searchDepth=1,Name="聊天").Click()
         time.sleep(random.uniform(0.5, 1.5))
-        ctList = wc.ListControl(Name='会话')
-        if not ctList.Exists():
-            print("未找到会话: ListControl")
-            return
-        chat.msgScroll(wc, ctList, func=chat.chat)
+        chat.chat(wc)
+        
     else:
         print(f"请选择要执行的操作：['contact', 'post', 'search', 'chat']")
 
