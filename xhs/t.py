@@ -46,3 +46,71 @@ async def demo_soft_delete():
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
+
+
+
+
+
+from datetime import datetime
+from typing import List, Optional, Union
+from pydantic import BaseModel, EmailStr, Field, validator
+
+class UserBase(BaseModel):
+    id: int
+    name: str = Field(default=None, max_length=50)
+    email: EmailStr = Field(..., max_length=100)
+    created_at: datetime
+    updated_at: datetime
+    followers: List['User'] = []
+    following: List['User'] = []
+
+    class Config:
+        orm_mode = True
+
+class MessageBase(BaseModel):
+    id: int
+    content: str = Field(..., min_length=1)
+    sender_id: int
+    receiver_id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class ArchiveBase(BaseModel):
+    id: int
+    file_type: str = Field(..., max_length=50)
+    metadata: dict
+    graph: dict
+    owner_id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class EmbedBase(BaseModel):
+    id: int
+    source_type: str
+    source_id: int
+    embedding: List[float]
+    created_at: datetime
+
+    @validator('source_type')
+    def validate_source_type(cls, v):
+        if v not in ('message', 'archive'):
+            raise ValueError("source_type must be 'message' or 'archive'")
+        return v
+
+    @validator('embedding')
+    def validate_embedding(cls, v, values):
+        if 'source_type' in values and values['source_type'] == 'message' and len(v) != 1024:
+            raise ValueError("Message embedding must be 1024-dimensional")
+        if 'source_type' in values and values['source_type'] == 'archive' and len(v) != 768:
+            raise ValueError("Archive embedding must be 768-dimensional")
+        return v
+
+    class Config:
+        orm_mode = True
+
+为这个model.py 模块写一个 fastapi  crud 接口模块  main.py 目标数据库为pgvector

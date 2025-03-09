@@ -162,8 +162,6 @@ class User(SoftDeleteMixin, MongoDB['User']):
     async def find_adults(cls, min_age: int = 18) -> List['User']:
         """查询成年用户"""
         return await cls.find({"age": {"$gte": min_age}})
-    
-
 
 class Message(MongoDB['Message']):
     _collection_name = "messages"
