@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 from pydantic import BaseModel, EmailStr, Field, validator
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSONB, CheckConstraint, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, JSON, CheckConstraint, Table, Index
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.ext.declarative import declared_attr
 from pgvector.sqlalchemy import Vector
@@ -20,8 +20,10 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=True)
-    email = Column(String(100), unique=True, nullable=False)
+    name = Column(String(50), default=None, nullable=True)
+    email = Column(String(255), unique=True, nullable=False)
+    passwd = Column(Text, nullable=False)
+    config = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -32,13 +34,15 @@ class User(Base):
     followers = relationship(
         "User",
         secondary=user_followers,
-        primaryjoin="User.id == user_followers.c.followed_id",
+        primaryjoin=(id == user_followers.c.followed_id), 
+        foreign_keys=[user_followers.c.followed_id], 
         back_populates="following"
     )
     following = relationship(
         "User",
         secondary=user_followers,
-        primaryjoin="User.id == user_followers.c.follower_id",
+        primaryjoin=(id == user_followers.c.follower_id),
+        foreign_keys=[user_followers.c.follower_id],  #
         back_populates="followers"
     )
 
@@ -61,8 +65,8 @@ class Archive(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     file_type = Column(String(50), nullable=False)
     path = Column(Text)
-    metadata = Column(JSONB)
-    graph = Column(JSONB)
+    filemeta = Column(JSON)
+    graph = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -77,42 +81,60 @@ class EmbedFactory:
             id = Column(Integer, primary_key=True)
             source_type = Column(String(20), nullable=False)  # 'message' 或 'archive'
             source_id = Column(Integer, nullable=False)
+            user_id = Column(Integer, nullable=True)
             embedding = Column(Vector(dimension))
             created_at = Column(DateTime, default=datetime.utcnow)
 
             __table_args__ = (
-                CheckConstraint(
-                    "source_type IN ('message', 'archive')",
-                    name=f"check_source_type_{dimension}"
-                ),
-                Index(f"idx_source_{dimension}", "source_type", "source_id")
+                # CheckConstraint(
+                #     "source_type IN ('message', 'archive')",
+                #     name=f"check_source_type_{dimension}"
+                # ),
+                # Index(f"idx_source_{dimension}", "source_type", "source_id"),
+                {"extend_existing": True}, 
             )
 
             @declared_attr
             def message_id(cls):
-                return Column(Integer, ForeignKey("messages.id")) if dimension == 1024 else None  # 示例条件
+                pass
+                # return Column(Integer, ForeignKey("messages.id")) if dimension == 1024 else None  # 示例条件
 
             @declared_attr
             def archive_id(cls):
-                return Column(Integer, ForeignKey("archives.id")) if dimension == 768 else None  # 示例条件
-
+                pass
+                # return Column(Integer, ForeignKey("archives.id")) if dimension == 768 else None  # 示例条件
         return Embed
 
-# 示例：创建不同维度的表
-# Embed1024 = EmbedFactory.create_embed_model(1024)
-# Embed768 = EmbedFactory.create_embed_model(768)
+
+def create_embedding_model(vector_size):
+    table_name = f"embed_{vector_size}"
+    if table_name in Base.metadata.tables:
+        return Base.metadata.tables[table_name]
+    
+    class_attrs = {
+        '__tablename__': table_name,
+        'id': Column(Integer, primary_key=True),
+        'description': Column(String),
+        'embedding': Column(Vector(vector_size)),
+    }
+    
+    ModelClass = type(f'Embedding{vector_size}', (Base,), class_attrs)
+    return ModelClass
+
 
 class UserBase(BaseModel):
     id: int
-    name: str = Field(default=None, max_length=50)
+    name: Optional[str] = Field(default=None, max_length=50)
     email: EmailStr = Field(..., max_length=100)
+    config: Optional[Dict]
     created_at: datetime
     updated_at: datetime
     followers: List['User'] = []
     following: List['User'] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+        arbitrary_types_allowed = True 
 
 class MessageBase(BaseModel):
     id: int
@@ -122,19 +144,19 @@ class MessageBase(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ArchiveBase(BaseModel):
     id: int
     file_type: str = Field(..., max_length=50)
-    metadata: dict
-    graph: dict
+    filemeta: Optional[dict]
+    graph: Optional[dict]
     owner_id: int
     created_at: datetime
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class EmbedBase(BaseModel):
     id: int
@@ -149,13 +171,6 @@ class EmbedBase(BaseModel):
             raise ValueError("source_type must be 'message' or 'archive'")
         return v
 
-    @validator('embedding')
-    def validate_embedding(cls, v, values):
-        if 'source_type' in values and values['source_type'] == 'message' and len(v) != 1024:
-            raise ValueError("Message embedding must be 1024-dimensional")
-        if 'source_type' in values and values['source_type'] == 'archive' and len(v) != 768:
-            raise ValueError("Archive embedding must be 768-dimensional")
-        return v
-
     class Config:
-        orm_mode = True
+        from_attributes = True
+    
