@@ -51,7 +51,7 @@ Temporary Items
 *.icloud
 
 ### Node ###
-# Logs
+*.lock
 logs
 *.log
 npm-debug.log*
